@@ -20,7 +20,7 @@ work_end_time = time(16, 0, 0)
 all_dates = pd.date_range(start=data['Meeting Date'].min(), end=data['Meeting Date'].max(), freq='B')
 
 # Initialize deep focus times dictionary
-deep_focus_dict = {day: timedelta(hours=8) - timedelta(hours=1) for day in all_dates}  # 7 hours minus 1 hour for lunch break
+deep_focus_dict = {day: 0 for day in all_dates}
 
 # Process the data to find deep focus periods each day
 for day, day_data in data.groupby(data['Meeting Date']):
@@ -75,16 +75,20 @@ for day, day_data in data.groupby(data['Meeting Date']):
             if gap > timedelta(minutes=30):
                 deep_focus_time += gap - timedelta(minutes=30)
     
-    # Add to the deep focus dictionary
-    deep_focus_dict[day] = deep_focus_time.total_seconds() / 3600  # Convert to hours
+    # Convert deep focus time to minutes and add to the deep focus dictionary
+    deep_focus_dict[day] = deep_focus_time.total_seconds() // 60  # Convert to minutes (integer)
 
 # Convert dictionary to DataFrame for visualization
-deep_focus_df = pd.DataFrame(list(deep_focus_dict.items()), columns=['Date', 'Deep Focus Hours'])
+deep_focus_df = pd.DataFrame(list(deep_focus_dict.items()), columns=['Date', 'Deep Focus Minutes'])
+
+# Export deep_focus_df to file
+deep_focus_df.to_csv('deep_focus_data.csv', index=False)
+
 deep_focus_df = deep_focus_df.sort_values(by='Date')
 
 # Plot the data
 plt.figure(figsize=(10, 6))
-plt.plot(deep_focus_df['Date'], deep_focus_df['Deep Focus Hours'], marker='o', linestyle='-')
+plt.plot(deep_focus_df['Date'], deep_focus_df['Deep Focus Minutes'] / 60, marker='o', linestyle='-')
 plt.title('Deep Focus Time by Day (08:00 - 16:00, excluding 11:00 - 12:00 lunch break)')
 plt.xlabel('Date')
 plt.ylabel('Deep Focus Hours')
