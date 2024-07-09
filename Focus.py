@@ -20,7 +20,7 @@ work_end_time = time(16, 0, 0)
 all_dates = pd.date_range(start=data['Meeting Date'].min(), end=data['Meeting Date'].max(), freq='B')
 
 # Initialize deep focus times dictionary
-deep_focus_dict = {day: 0 for day in all_dates}
+deep_focus_dict = {day: 7 for day in all_dates}
 
 # Process the data to find deep focus periods each day
 for day, day_data in data.groupby(data['Meeting Date']):
@@ -82,8 +82,6 @@ for day, day_data in data.groupby(data['Meeting Date']):
 deep_focus_df = pd.DataFrame(list(deep_focus_dict.items()), columns=['Date', 'Deep Focus Minutes'])
 
 # Export deep_focus_df to file
-deep_focus_df.to_csv('deep_focus_data.csv', index=False)
-
 deep_focus_df = deep_focus_df.sort_values(by='Date')
 
 # Plot the data
