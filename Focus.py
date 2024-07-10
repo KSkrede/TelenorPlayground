@@ -86,7 +86,7 @@ deep_focus_df = deep_focus_df.sort_values(by='Date')
 
 # Plot the data
 plt.figure(figsize=(10, 6))
-plt.plot(deep_focus_df['Date'], deep_focus_df['Deep Focus Minutes'] / 60, marker='o', linestyle='-')
+plt.plot(deep_focus_df['Date'], deep_focus_df['Deep Focus Minutes'] / 60, marker='o', linestyle='')
 plt.title('Deep Focus Time by Day (08:00 - 16:00, excluding 11:00 - 12:00 lunch break)')
 plt.xlabel('Date')
 plt.ylabel('Deep Focus Hours')

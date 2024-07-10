@@ -95,8 +95,8 @@ def main(input_file, output_file):
 
 
 if __name__ == "__main__":
-    # input_file = 'Calendar.xml'  # Specify your input file here
-    input_file = "Calendar.CSV"  # Specify your input file here
+    input_file = 'Calendar.xml'  # Specify your input file here
+    # input_file = "Calendar.CSV"  # Specify your input file here
     output_file = "output.csv"  # Specify your desired output file
 
     main(input_file, output_file)
