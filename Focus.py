@@ -17,10 +17,11 @@ lunch_end_time = time(12, 0, 0)
 work_end_time = time(16, 0, 0)
 
 # Create a list of all weekdays in the date range
+# B is businessday frequency, which excludes weekends
 all_dates = pd.date_range(start=data['Meeting Date'].min(), end=data['Meeting Date'].max(), freq='B')
 
 # Initialize deep focus times dictionary
-deep_focus_dict = {day: 7 for day in all_dates}
+deep_focus_dict = {day: 0 for day in all_dates}
 
 # Process the data to find deep focus periods each day
 for day, day_data in data.groupby(data['Meeting Date']):
@@ -33,7 +34,7 @@ for day, day_data in data.groupby(data['Meeting Date']):
     
     # Initialize variables
     deep_focus_time = timedelta(0)
-    last_end_time = datetime.combine(day, work_start_time)
+    start_of_working_day = datetime.combine(day, work_start_time)
     end_of_working_day = datetime.combine(day, work_end_time)
     lunch_start = datetime.combine(day, lunch_start_time)
     lunch_end = datetime.combine(day, lunch_end_time)
@@ -42,36 +43,38 @@ for day, day_data in data.groupby(data['Meeting Date']):
         start_time = max(row['Start Time'], datetime.combine(day, work_start_time))
         end_time = min(row['End Time'], end_of_working_day)
         
+        
+        # If the meeting's start time is at or after the end of the working day, exit the loop as no further meetings need to be processed.
         if start_time >= end_of_working_day:
             break
         
-        if last_end_time < start_time:
+        if start_of_working_day < start_time:
             # If the gap crosses the lunch break, split the gap
-            if last_end_time < lunch_start and start_time > lunch_end:
-                gap_before_lunch = lunch_start - last_end_time
+            if start_of_working_day < lunch_start and start_time > lunch_end:
+                gap_before_lunch = lunch_start - start_of_working_day
                 gap_after_lunch = start_time - lunch_end
                 if gap_before_lunch > timedelta(minutes=30):
                     deep_focus_time += gap_before_lunch - timedelta(minutes=30)
                 if gap_after_lunch > timedelta(minutes=30):
                     deep_focus_time += gap_after_lunch - timedelta(minutes=30)
             else:
-                gap = start_time - last_end_time
+                gap = start_time - start_of_working_day
                 if gap > timedelta(minutes=30):
                     deep_focus_time += gap - timedelta(minutes=30)
         
-        last_end_time = max(last_end_time, end_time)
+        start_of_working_day = max(start_of_working_day, end_time)
     
     # If there is time left in the working day after the last meeting
-    if last_end_time < end_of_working_day:
-        if last_end_time < lunch_start:
-            gap_before_lunch = lunch_start - last_end_time
+    if start_of_working_day < end_of_working_day:
+        if start_of_working_day < lunch_start:
+            gap_before_lunch = lunch_start - start_of_working_day
             if gap_before_lunch > timedelta(minutes=30):
                 deep_focus_time += gap_before_lunch - timedelta(minutes=30)
             gap_after_lunch = end_of_working_day - lunch_end
             if gap_after_lunch > timedelta(minutes=30):
                 deep_focus_time += gap_after_lunch - timedelta(minutes=30)
-        elif last_end_time > lunch_end:
-            gap = end_of_working_day - last_end_time
+        elif start_of_working_day > lunch_end:
+            gap = end_of_working_day - start_of_working_day
             if gap > timedelta(minutes=30):
                 deep_focus_time += gap - timedelta(minutes=30)
     
